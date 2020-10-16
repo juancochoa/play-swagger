@@ -77,6 +77,18 @@ paths:
       summary: Registar leads
       description: Se realiza el registro de leads para vincular posteriormente nuevos
         usuarios.
+      x-amazon-apigateway-integration:
+        uri: http://${stageVariables.endpoint}/usuario/leads/registrar
+        responses:
+          default:
+            statusCode: "200"
+        requestParameters:
+          integration.request.header.Accept-Encoding: '''identity'''
+        passthroughBehavior: when_no_match
+        connectionType: VPC_LINK
+        connectionId: ${stageVariables.vpcLinkId}
+        httpMethod: POST
+        type: http_proxy
     options:
       consumes:
       - application/json
@@ -94,6 +106,18 @@ paths:
               type: string
           schema:
             $ref: '#/definitions/Empty'
+      x-amazon-apigateway-integration:
+        uri: http://${stageVariables.endpoint}/usuario/version
+        responses:
+          default:
+            statusCode: "200"
+        requestParameters:
+          integration.request.header.Accept-Encoding: '''identity'''
+        passthroughBehavior: when_no_match
+        connectionType: VPC_LINK
+        connectionId: ${stageVariables.vpcLinkId}
+        httpMethod: GET
+        type: http_proxy
 definitions:
   RegistrarLeadResponse:
     required:
@@ -146,3 +170,82 @@ definitions:
           type: string
   Empty:
     type: object
+securityDefinitions:
+  sigv4:
+    type: apiKey
+    name: Authorization
+    in: header
+    x-amazon-apigateway-authtype: awsSigv4
+  custom_auth_by_request_dev:
+    type: apiKey
+    name: Unused
+    in: header
+    x-amazon-apigateway-authtype: custom
+    x-amazon-apigateway-authorizer:
+      authorizerUri: arn:aws:apigateway:us-east-1:lambda:path/2015-03-31/functions/arn:aws:lambda:us-east-1:663438867067:function:custom_auth_by_request_dev/invocations
+      authorizerCredentials: arn:aws:iam::663438867067:role/lambdaCallerRole_dev
+      authorizerResultTtlInSeconds: 0
+      type: request
+x-amazon-apigateway-gateway-responses:
+  INVALID_API_KEY:
+    statusCode: 403
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+      gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+    responseTemplates:
+      application/json: '{"INVALID API KEY message":$context.error.messageString}'
+  EXPIRED_TOKEN:
+    statusCode: 403
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Methods: '''GET,OPTIONS,POST'''
+      gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+      gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+    responseTemplates:
+      application/json: '{"EXPIRED TOKEN message":$context.error.messageString}'
+  UNAUTHORIZED:
+    statusCode: 401
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+      gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+    responseTemplates:
+      application/json: '{"UNAUTHORIZED message":$context.error.messageString}'
+  DEFAULT_5XX:
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+      gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+  INVALID_SIGNATURE:
+    statusCode: 403
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+      gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+    responseTemplates:
+      application/json: '{"INVALID SIGNATURE message":$context.error.messageString}'
+  ACCESS_DENIED:
+    statusCode: 403
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Methods: '''GET,OPTIONS,POST'''
+      gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+      gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+    responseTemplates:
+      application/json: '{"ACCESS DENIED message":$context.error.messageString}'
+  DEFAULT_4XX:
+    responseParameters:
+      gatewayresponse.header.Access-Control-Allow-Methods: '''GET,OPTIONS'''
+      gatewayresponse.header.Access-Control-Allow-Credentials: '''true'''
+      gatewayresponse.header.Access-Control-Allow-Headers: '''Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'''
+      gatewayresponse.header.Access-Control-Allow-Origin: '''*'''
+x-amazon-apigateway-binary-media-types:
+- multipart/form-data
+- application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+- image/png
+- image/jpg
+- image/jpeg
