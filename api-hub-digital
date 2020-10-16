@@ -1,0 +1,148 @@
+---
+swagger: "2.0"
+info:
+  title: api-hub-digital
+  version: 1.0.0
+  description: Especificación de las APIs del hub digital
+  termsOfService: https://www.qiip.com.mx/assets/documentos/mx_terminos_y_condiciones.pdf
+  contact:
+    name: API Support
+    url: http://www.swagger.io/support
+    email: support@swagger.io
+  license:
+    name: Apache 2.0
+    url: http://www.apache.org/licenses/LICENSE-2.0.html
+host: api2.qiip.com.co
+basePath: /dev
+paths:
+  /usuario/leads/registrar:
+    post:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      parameters:
+      - name: correlation-id
+        in: header
+        required: true
+        type: string
+      - name: X-nbm-auth
+        in: header
+        required: true
+        type: string
+      - name: RegistrarLeadRequest
+        description: |-
+          A JSON object as a payload is required within the body of the request. The following attributes of the JSON object are detailed below:
+          - `idUsuario` *(string, required)* - Corresponde al id del usuario
+          - `estado` *(string, optional)* - Estado inicial del usuario, valor por defecto NUEVO.
+          - `tipo` *(string, optional)* - Especifica el tipo de usuario.
+        schema:
+          $ref: '#/definitions/RegistrarLeadRequest'
+        in: body
+        required: true
+        x-example:
+          idUsuario: "123"
+          estado: "0"
+          tipo: "1"
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/RegistrarLeadResponse'
+          examples:
+            application/json:
+              id: "123"
+              idUsuario: "123"
+              estado: prueba
+              fechaActualizacion: 2019-04-01T09:23:54.412-05:00
+              fechaCreacion: 2019-04-01T09:23:54.412-05:00
+              tipo: prueba
+        "400":
+          description: 400 response
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+        "500":
+          description: 500 response
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+          schema:
+            $ref: '#/definitions/ErrorResponse'
+      summary: Registar leads
+      description: Se realiza el registro de leads para vincular posteriormente nuevos
+        usuarios.
+    options:
+      consumes:
+      - application/json
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: 200 response
+          headers:
+            Access-Control-Allow-Origin:
+              type: string
+            Access-Control-Allow-Methods:
+              type: string
+            Access-Control-Allow-Headers:
+              type: string
+          schema:
+            $ref: '#/definitions/Empty'
+definitions:
+  RegistrarLeadResponse:
+    required:
+    - estado
+    - fechaActualizacion
+    - fechaCreacion
+    - id
+    - idUsuario
+    - tipo
+    type: object
+    properties:
+      id:
+        type: string
+      idUsuario:
+        type: string
+      estado:
+        type: string
+      fechaActualizacion:
+        type: string
+      fechaCreacion:
+        type: string
+      tipo:
+        type: string
+  RegistrarLeadRequest:
+    required:
+    - idUsuario
+    - estado
+    - tipo
+    type: object
+    properties:
+      idUsuario:
+        type: string
+      estado:
+        type: string
+      tipo:
+        type: string
+  ErrorResponse:
+    required:
+    - campos
+    - mensaje
+    type: object
+    properties:
+      mensaje:
+        description: ""
+        type: string
+      campos:
+        description: ""
+        type: array
+        items:
+          type: string
+  Empty:
+    type: object
